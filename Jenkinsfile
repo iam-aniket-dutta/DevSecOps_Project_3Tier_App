@@ -42,7 +42,7 @@ pipeline {
             }
         }
         
-         stage('Docker build image') {
+        stage('Docker build image') {
             steps {
                script{
                    withDockerRegistry(credentialsId: 'docker-credentials', toolName: 'docker') {
@@ -69,13 +69,19 @@ pipeline {
         }
         
         stage('Docker Deployment for Dev Env') {
-            steps {
-               script{
-                   withDockerRegistry(credentialsId: 'docker-credentials', toolName: 'docker') {
-                        sh 'docker run -d -p 3000:3000  aniketnitu2026/3tier-app:latest'
+        steps {
+            script {
+                withCredentials([file(credentialsId: 'app-env', variable: 'DOTENV_FILE')]) {
+                    withDockerRegistry(credentialsId: 'docker-credentials', toolName: 'docker') {
+                        // 2. Stop and remove any existing container to prevent port conflicts
+                        sh 'docker rm -f 3tier-app-dev || true'
+                        // 3. Run the new container using the --env-file flag
+                        // The variable ${DOTENV_FILE} points to the temporary path where Jenkins stored your secret
+                        sh 'docker run -d  -p 3000:3000 --name 3tier-app-dev --env-file ${DOTENV_FILE} aniketnitu2026/3tier-app:latest'
                     }
-               }
+                }
             }
         }
+}
     }
 }
