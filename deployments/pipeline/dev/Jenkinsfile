@@ -68,7 +68,7 @@ pipeline {
             }
         }
         
-        stage('Docker Deployment for Dev Env') {
+        stage('Docker Deployment') {
         steps {
             script {
                 withCredentials([file(credentialsId: 'app-env', variable: 'DOTENV_FILE')]) {
